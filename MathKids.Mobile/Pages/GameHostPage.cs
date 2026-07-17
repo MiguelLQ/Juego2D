@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using MathKids.Game.Core;
 using MathKids.Game.Input.Touch;
+using MathKids.Application.Abstractions;
 using Microsoft.Maui.Dispatching;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
@@ -10,12 +11,14 @@ namespace MathKids.Mobile.Pages;
 public sealed class GameHostPage : ContentPage
 {
     private readonly GameController _gameController;
+    private readonly IAudioService _audioService;
     private readonly SKCanvasView _canvasView;
     private readonly Stopwatch _clock = Stopwatch.StartNew();
     private IDispatcherTimer? _frameTimer;
-    public GameHostPage(GameController gameController)
+    public GameHostPage(GameController gameController, IAudioService audioService)
     {
         _gameController = gameController;
+        _audioService = audioService;
         NavigationPage.SetHasNavigationBar(this, false);
         Shell.SetNavBarIsVisible(this, false);
         BackgroundColor = Color.FromArgb("#1E2842");
@@ -24,17 +27,24 @@ public sealed class GameHostPage : ContentPage
         _canvasView.Touch += OnTouch;
         Content = _canvasView;
     }
-    protected override void OnAppearing() { base.OnAppearing(); StartGame(); }
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _audioService.InitializeAsync();
+        StartGame();
+    }
     protected override void OnDisappearing() { PauseGame(); base.OnDisappearing(); }
     public void StartGame()
     {
         _gameController.Start();
+        _audioService.ResumeMusic();
         _frameTimer ??= CreateFrameTimer();
         if (!_frameTimer.IsRunning) _frameTimer.Start();
     }
     public void PauseGame()
     {
         if (_frameTimer?.IsRunning == true) _frameTimer.Stop();
+        _audioService.PauseMusic();
         _gameController.Pause();
     }
     private IDispatcherTimer CreateFrameTimer()

@@ -1,3 +1,4 @@
+using MathKids.Application.Abstractions;
 using MathKids.Game.Components;
 using MathKids.Game.Core;
 using MathKids.Game.Input.Touch;
@@ -9,20 +10,23 @@ namespace MathKids.Game.Scenes.Results;
 public sealed class ProgressScene : KidsSceneBase
 {
     private readonly PlayerGameState _state;
+    private readonly IAudioService _audioService;
     private readonly BottomNavigationBar _navigationBar;
     private string _lastGameText = "A\u00FAn no hay partidas guardadas";
     private string _lastPlayedText = string.Empty;
 
-    public ProgressScene(GameNavigation navigation, PlayerGameState state)
+    public ProgressScene(GameNavigation navigation, PlayerGameState state, IAudioService audioService)
     {
         _state = state;
-        _navigationBar = new BottomNavigationBar(navigation, GameScreen.Progress);
+        _audioService = audioService;
+        _navigationBar = new BottomNavigationBar(navigation, GameScreen.Progress, audioService);
     }
 
     public override GameScreen Screen => GameScreen.Progress;
     public override void Enter()
     {
         _state.Reload();
+        _audioService.PlayMusic(MusicCue.Home);
         _lastGameText = _state.LastGame switch
         {
             "addition" => "\u00DAltimo juego: Aventura de sumas",
@@ -43,7 +47,7 @@ public sealed class ProgressScene : KidsSceneBase
         DrawWorldBackground(canvas, viewport);
         DrawBrandHeader(canvas, 175f, 0.92f);
         DrawCoinBadge(canvas, _state.Coins);
-        DrawAudioButton(canvas);
+        DrawAudioButton(canvas, _audioService.IsMuted);
         TextPaint.TextSize = 58f; TextPaint.Color = new SKColor(29, 69, 122);
         canvas.DrawText("Mi progreso", 540f, 335f, TextPaint);
 
@@ -61,7 +65,11 @@ public sealed class ProgressScene : KidsSceneBase
         _navigationBar.Draw(canvas);
     }
 
-    public override void HandleInput(GameInput input) => _navigationBar.HandleInput(input);
+    public override void HandleInput(GameInput input)
+    {
+        if (TryHandleAudioButton(input, _audioService)) return;
+        _navigationBar.HandleInput(input);
+    }
 
     private void DrawStatCard(SKCanvas canvas, float x, float y, SKColor color, string icon, string value, string label)
     {

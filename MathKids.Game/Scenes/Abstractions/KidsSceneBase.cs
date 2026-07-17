@@ -1,3 +1,4 @@
+using MathKids.Application.Abstractions;
 using MathKids.Game.Common;
 using MathKids.Game.Core;
 using MathKids.Game.Input.HitTesting;
@@ -16,6 +17,7 @@ public abstract class KidsSceneBase : IGameScene, IDisposable
     protected readonly SKPaint TextPaint = new() { IsAntialias = true, TextAlign = SKTextAlign.Center, Typeface = SKTypeface.FromFamilyName("sans-serif", SKFontStyle.Bold) };
     protected readonly SKPaint ShadowPaint = new() { IsAntialias = true, Color = new SKColor(36, 71, 100, 35) };
     protected static readonly GameRectangle BackButtonBounds = new(42f, 54f, 112f, 112f);
+    protected static readonly GameRectangle AudioButtonBounds = new(920f, 156f, 108f, 108f);
 
     protected KidsSceneBase()
     {
@@ -132,6 +134,14 @@ public abstract class KidsSceneBase : IGameScene, IDisposable
         StrokePaint.Color = muted ? new SKColor(225, 84, 91) : new SKColor(43, 101, 153); StrokePaint.StrokeWidth = 7f;
         if (muted) canvas.DrawLine(996f, 189f, 1022f, 231f, StrokePaint);
         else { canvas.DrawArc(new SKRect(978f, 191f, 1012f, 229f), -55f, 110f, false, StrokePaint); canvas.DrawArc(new SKRect(978f, 179f, 1029f, 241f), -52f, 104f, false, StrokePaint); }
+    }
+
+    protected static bool TryHandleAudioButton(GameInput input, IAudioService audioService)
+    {
+        if (!IsReleasedInside(input, AudioButtonBounds)) return false;
+        audioService.SetMuted(!audioService.IsMuted);
+        if (!audioService.IsMuted) audioService.PlayEffect(AudioCue.Tap);
+        return true;
     }
 
     protected static bool IsReleasedInside(GameInput input, GameRectangle bounds) => input.Type == GameInputType.Released && HitTest.Contains(bounds, input.Position);

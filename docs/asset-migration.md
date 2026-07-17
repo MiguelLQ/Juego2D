@@ -119,17 +119,7 @@ MathKids.Mobile/Resources/Raw/Audio/
 
 Las rutas logicas son `Audio/Effects/correct.wav` y `Audio/Music/menu_theme.mp3`.
 
-El proyecto usa actualmente `NullAudioService`, por eso no se escucha nada. Para activar audio se crea `MauiAudioService`, se precargan los clips y se reemplaza el registro:
-
-```csharp
-services.AddSingleton<IAudioService, NullAudioService>();
-```
-
-por:
-
-```csharp
-services.AddSingleton<IAudioService, MauiAudioService>();
-```
+El proyecto ya utiliza `MauiAudioService`, que precarga los clips existentes y omite los faltantes. Solo se deben copiar los archivos con los nombres indicados y recompilar.
 
 Mapeo actual:
 

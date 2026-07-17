@@ -1,3 +1,4 @@
+using MathKids.Application.Abstractions;
 using MathKids.Game.Common;
 using MathKids.Game.Components;
 using MathKids.Game.Core;
@@ -14,18 +15,20 @@ public sealed class GamesMenuScene : KidsSceneBase
     private static readonly GameRectangle ComingOneBounds = new(70f, 1010f, 450f, 470f);
     private static readonly GameRectangle ComingTwoBounds = new(560f, 1010f, 450f, 470f);
     private readonly GameNavigation _navigation;
+    private readonly IAudioService _audioService;
     private readonly PlayerGameState _state;
     private readonly BottomNavigationBar _navigationBar;
 
-    public GamesMenuScene(GameNavigation navigation, PlayerGameState state)
+    public GamesMenuScene(GameNavigation navigation, PlayerGameState state, IAudioService audioService)
     {
         _navigation = navigation;
         _state = state;
-        _navigationBar = new BottomNavigationBar(navigation, GameScreen.Games);
+        _audioService = audioService;
+        _navigationBar = new BottomNavigationBar(navigation, GameScreen.Games, audioService);
     }
 
     public override GameScreen Screen => GameScreen.Games;
-    public override void Enter() { }
+    public override void Enter() => _audioService.PlayMusic(MusicCue.Home);
     public override void Exit() { }
     public override void Update(GameTime gameTime) { }
 
@@ -34,7 +37,7 @@ public sealed class GamesMenuScene : KidsSceneBase
         DrawWorldBackground(canvas, viewport);
         DrawBrandHeader(canvas, 175f, 0.92f);
         DrawCoinBadge(canvas, _state.Coins);
-        DrawAudioButton(canvas);
+        DrawAudioButton(canvas, _audioService.IsMuted);
         TextPaint.TextSize = 57f; TextPaint.Color = new SKColor(29, 69, 122);
         canvas.DrawText("Elige tu aventura", 540f, 335f, TextPaint);
         DrawModule(canvas, AdditionBounds, new SKColor(96, 181, 246), "7 + 5", "Aventura de sumas", "Resuelve y gana estrellas", true);
@@ -46,12 +49,15 @@ public sealed class GamesMenuScene : KidsSceneBase
 
     public override void HandleInput(GameInput input)
     {
-        if (IsReleasedInside(input, AdditionBounds)) _navigation.NavigateTo(GameScreen.Addition);
-        else if (IsReleasedInside(input, BingoBounds)) _navigation.NavigateTo(GameScreen.AdditionBingo);
-        else if (IsReleasedInside(input, ComingOneBounds)) _navigation.NavigateTo(GameScreen.PumaAddition);
-        else if (IsReleasedInside(input, ComingTwoBounds)) _navigation.NavigateTo(GameScreen.ChancaLaboratory);
+        if (TryHandleAudioButton(input, _audioService)) return;
+        if (IsReleasedInside(input, AdditionBounds)) NavigateTo(GameScreen.Addition);
+        else if (IsReleasedInside(input, BingoBounds)) NavigateTo(GameScreen.AdditionBingo);
+        else if (IsReleasedInside(input, ComingOneBounds)) NavigateTo(GameScreen.PumaAddition);
+        else if (IsReleasedInside(input, ComingTwoBounds)) NavigateTo(GameScreen.ChancaLaboratory);
         else _navigationBar.HandleInput(input);
     }
+
+    private void NavigateTo(GameScreen screen) { _audioService.PlayEffect(AudioCue.Tap); _navigation.NavigateTo(screen); }
 
     private void DrawModule(SKCanvas canvas, GameRectangle bounds, SKColor color, string icon, string title, string subtitle, bool enabled)
     {

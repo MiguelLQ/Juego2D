@@ -64,7 +64,7 @@ public sealed class AdditionBingoScene : KidsSceneBase
     }
 
     public override GameScreen Screen => GameScreen.AdditionBingo;
-    public override void Enter() { _bingoPoints = 0; LoadRound(); }
+    public override void Enter() { _audioService.PlayMusic(MusicCue.Bingo); _bingoPoints = 0; LoadRound(); }
     public override void Exit() { }
 
     public override void Update(GameTime gameTime)
@@ -93,7 +93,7 @@ public sealed class AdditionBingoScene : KidsSceneBase
         _backdrop.Draw(canvas, viewport);
         DrawBrandHeader(canvas, 165f, 0.88f);
         DrawCoinBadge(canvas, _state.Coins);
-        DrawAudioButton(canvas);
+        DrawAudioButton(canvas, _audioService.IsMuted);
         DrawBackButton(canvas);
         _condor.Draw(canvas, 190f, 455f, 0.55f, _mood);
         _speechBubble.Draw(canvas, MathF.Sin(_elapsed * 2f) * 3f);
@@ -113,8 +113,10 @@ public sealed class AdditionBingoScene : KidsSceneBase
 
     public override void HandleInput(GameInput input)
     {
+        if (TryHandleAudioButton(input, _audioService)) return;
         if (IsReleasedInside(input, BackButtonBounds))
         {
+            _audioService.PlayEffect(AudioCue.Tap);
             _navigation.NavigateTo(GameScreen.Games);
             return;
         }

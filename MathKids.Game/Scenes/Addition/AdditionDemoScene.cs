@@ -50,6 +50,7 @@ public sealed class AdditionDemoScene : KidsSceneBase
 
     public override void Enter()
     {
+        _audioService.PlayMusic(MusicCue.Addition);
         _roundCorrectAnswers = 0;
         LoadNextExercise();
     }
@@ -81,7 +82,7 @@ public sealed class AdditionDemoScene : KidsSceneBase
         _backdrop.Draw(canvas, viewport);
         DrawBrandHeader(canvas, 165f, 0.88f);
         DrawCoinBadge(canvas, _state.Coins);
-        DrawAudioButton(canvas);
+        DrawAudioButton(canvas, _audioService.IsMuted);
         DrawBackButton(canvas);
         DrawFoxMascot(canvas, -115f, MathF.Sin(_elapsed * 2.5f) * 9f);
         DrawRoundProgress(canvas);
@@ -109,8 +110,10 @@ public sealed class AdditionDemoScene : KidsSceneBase
 
     public override void HandleInput(GameInput input)
     {
+        if (TryHandleAudioButton(input, _audioService)) return;
         if (IsReleasedInside(input, BackButtonBounds))
         {
+            _audioService.PlayEffect(AudioCue.Tap);
             _navigation.NavigateTo(GameScreen.Games);
             return;
         }

@@ -14,6 +14,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+    <PackageReference Include="Plugin.Maui.Audio" Version="4.0.0" />
     <PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="2.88.9" />
   </ItemGroup>
   <ItemGroup>

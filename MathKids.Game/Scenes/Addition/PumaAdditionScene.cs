@@ -51,7 +51,7 @@ public sealed class PumaAdditionScene : KidsSceneBase
     }
 
     public override GameScreen Screen => GameScreen.PumaAddition;
-    public override void Enter() => LoadNextExercise();
+    public override void Enter() { _audioService.PlayMusic(MusicCue.Puma); LoadNextExercise(); }
     public override void Exit() { }
 
     public override void Update(GameTime gameTime)
@@ -80,7 +80,7 @@ public sealed class PumaAdditionScene : KidsSceneBase
         _backdrop.Draw(canvas, viewport);
         DrawBackButton(canvas);
         DrawCoinBadge(canvas, _state.Coins);
-        DrawAudioButton(canvas);
+        DrawAudioButton(canvas, _audioService.IsMuted);
         DrawTitle(canvas);
         _puma.Draw(canvas, 205f, 300f, 0.95f, _mood);
         DrawSpeechBubble(canvas);
@@ -93,8 +93,10 @@ public sealed class PumaAdditionScene : KidsSceneBase
 
     public override void HandleInput(GameInput input)
     {
+        if (TryHandleAudioButton(input, _audioService)) return;
         if (IsReleasedInside(input, BackButtonBounds))
         {
+            _audioService.PlayEffect(AudioCue.Tap);
             _navigation.NavigateTo(GameScreen.Games);
             return;
         }

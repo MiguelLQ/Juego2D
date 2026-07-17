@@ -510,9 +510,10 @@ Implementa servicios definidos en Application.
 - `MemoryLocalSettings`: configuración temporal en memoria.
 - `SqliteProgressRepository`: progreso persistente en SQLite.
 - `InMemoryProgressRepository`: alternativa utilizada por pruebas unitarias rápidas.
-- `NullAudioService`: implementación silenciosa de audio.
+- `NullAudioService`: implementacion silenciosa usada como respaldo fuera de MAUI.
+- `MauiAudioService`: implementacion real registrada por `MathKids.Mobile`.
 
-`NullAudioService` permite que las escenas soliciten sonidos sin fallar, aunque todavía no existan archivos de audio.
+`MauiAudioService` precarga los archivos disponibles y omite de forma segura los que todavia no existen. `NullAudioService` permanece como respaldo para pruebas y hosts sin MAUI.
 
 En el futuro, esta capa podrá ampliar:
 
@@ -1051,7 +1052,7 @@ Audio/
 └── menu_music.mp3
 ```
 
-`IAudioService` ya existe. Se deberá reemplazar `NullAudioService` por una implementación real.
+`IAudioService` y `MauiAudioService` ya estan implementados. Solo es necesario copiar los archivos usando los nombres documentados.
 
 Los efectos deben ser cortos y la música debe respetar pausa, reanudación y configuración de volumen.
 
@@ -1387,7 +1388,7 @@ public enum AudioCue
 }
 ```
 
-La implementacion registrada es `NullAudioService`, por eso actualmente no se escucha nada aunque las escenas llamen `PlayEffect`.
+La implementacion activa en Android es `MauiAudioService`. Se inicializa antes de iniciar el juego, precarga los archivos existentes y omite de forma segura cualquier audio faltante.
 
 Mapeo recomendado:
 
@@ -1397,19 +1398,7 @@ AudioCue.Correct   -> Audio/Effects/correct.wav
 AudioCue.TryAgain  -> Audio/Effects/try_again.wav
 ```
 
-Crear `MauiAudioService`, cargar esos clips una sola vez y reemplazar en `MathKids.Infrastructure/DependencyInjection/ServiceCollectionExtensions.cs`:
-
-```csharp
-services.AddSingleton<IAudioService, NullAudioService>();
-```
-
-por:
-
-```csharp
-services.AddSingleton<IAudioService, MauiAudioService>();
-```
-
-La implementacion puede usar una biblioteca MAUI de audio o servicios nativos. Se debe verificar la API de la biblioteca elegida para la version instalada.
+El servicio real se encuentra en `MathKids.Mobile/Audio/MauiAudioService.cs` y se registra desde `AddMathKidsMobile()`. Utiliza `Plugin.Maui.Audio` 4.0.0. Para comenzar, basta copiar los WAV y MP3 en las carpetas indicadas y recompilar.
 
 ### Musica, volumen y mute
 

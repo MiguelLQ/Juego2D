@@ -1,3 +1,4 @@
+using MathKids.Application.Abstractions;
 using MathKids.Game.Common;
 using MathKids.Game.Components;
 using MathKids.Game.Core;
@@ -15,20 +16,22 @@ public sealed class HomeScene : KidsSceneBase
     private static readonly GameRectangle PumaBounds = new(90f, 1300f, 420f, 230f);
     private static readonly GameRectangle ChancaBounds = new(570f, 1300f, 420f, 230f);
     private readonly GameNavigation _navigation;
+    private readonly IAudioService _audioService;
     private readonly PlayerGameState _state;
     private readonly BottomNavigationBar _navigationBar;
     private readonly AndeanDashboardBackdrop _backdrop = new();
     private float _elapsed;
 
-    public HomeScene(GameNavigation navigation, PlayerGameState state)
+    public HomeScene(GameNavigation navigation, PlayerGameState state, IAudioService audioService)
     {
         _navigation = navigation;
         _state = state;
-        _navigationBar = new BottomNavigationBar(navigation, GameScreen.Home);
+        _audioService = audioService;
+        _navigationBar = new BottomNavigationBar(navigation, GameScreen.Home, audioService);
     }
 
     public override GameScreen Screen => GameScreen.Home;
-    public override void Enter() { }
+    public override void Enter() => _audioService.PlayMusic(MusicCue.Home);
     public override void Exit() { }
     public override void Update(GameTime gameTime) { _elapsed += gameTime.DeltaSeconds; _backdrop.Update(gameTime); }
 
@@ -37,7 +40,7 @@ public sealed class HomeScene : KidsSceneBase
         _backdrop.Draw(canvas, viewport);
         DrawBrandHeader(canvas, 180f, 0.96f);
         DrawCoinBadge(canvas, _state.Coins);
-        DrawAudioButton(canvas);
+        DrawAudioButton(canvas, _audioService.IsMuted);
 
         var bob = MathF.Sin(_elapsed * 2.4f) * 12f;
         DrawFoxMascot(canvas, -75f, bob);
@@ -66,12 +69,15 @@ public sealed class HomeScene : KidsSceneBase
 
     public override void HandleInput(GameInput input)
     {
-        if (IsReleasedInside(input, AdditionBounds)) _navigation.NavigateTo(GameScreen.Addition);
-        else if (IsReleasedInside(input, BingoBounds)) _navigation.NavigateTo(GameScreen.AdditionBingo);
-        else if (IsReleasedInside(input, PumaBounds)) _navigation.NavigateTo(GameScreen.PumaAddition);
-        else if (IsReleasedInside(input, ChancaBounds)) _navigation.NavigateTo(GameScreen.ChancaLaboratory);
+        if (TryHandleAudioButton(input, _audioService)) return;
+        if (IsReleasedInside(input, AdditionBounds)) NavigateTo(GameScreen.Addition);
+        else if (IsReleasedInside(input, BingoBounds)) NavigateTo(GameScreen.AdditionBingo);
+        else if (IsReleasedInside(input, PumaBounds)) NavigateTo(GameScreen.PumaAddition);
+        else if (IsReleasedInside(input, ChancaBounds)) NavigateTo(GameScreen.ChancaLaboratory);
         else _navigationBar.HandleInput(input);
     }
+
+    private void NavigateTo(GameScreen screen) { _audioService.PlayEffect(AudioCue.Tap); _navigation.NavigateTo(screen); }
 
     private void DrawGameCard(SKCanvas canvas, GameRectangle bounds, SKColor color, string title, string subtitle, int icon)
     {

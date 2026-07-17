@@ -50,7 +50,7 @@ public sealed class ChancaLaboratoryScene : KidsSceneBase
     }
 
     public override GameScreen Screen => GameScreen.ChancaLaboratory;
-    public override void Enter() => LoadNextExperiment();
+    public override void Enter() { _audioService.PlayMusic(MusicCue.ChankaLaboratory); LoadNextExperiment(); }
     public override void Exit() { }
 
     public override void Update(GameTime gameTime)
@@ -79,7 +79,7 @@ public sealed class ChancaLaboratoryScene : KidsSceneBase
         _backdrop.Draw(canvas, viewport);
         DrawBackButton(canvas);
         DrawCoinBadge(canvas, _state.Coins);
-        DrawAudioButton(canvas);
+        DrawAudioButton(canvas, _audioService.IsMuted);
         DrawHeader(canvas);
         _guide.Draw(canvas, 790f, 265f, 0.62f, _mood);
         DrawSpeechBubble(canvas);
@@ -90,8 +90,10 @@ public sealed class ChancaLaboratoryScene : KidsSceneBase
 
     public override void HandleInput(GameInput input)
     {
+        if (TryHandleAudioButton(input, _audioService)) return;
         if (IsReleasedInside(input, BackButtonBounds))
         {
+            _audioService.PlayEffect(AudioCue.Tap);
             _navigation.NavigateTo(GameScreen.Games);
             return;
         }

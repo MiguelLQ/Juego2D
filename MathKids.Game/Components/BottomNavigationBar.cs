@@ -1,3 +1,4 @@
+using MathKids.Application.Abstractions;
 using MathKids.Game.Common;
 using MathKids.Game.Core;
 using MathKids.Game.Input.HitTesting;
@@ -6,7 +7,7 @@ using SkiaSharp;
 
 namespace MathKids.Game.Components;
 
-public sealed class BottomNavigationBar(GameNavigation navigation, GameScreen activeScreen) : IDisposable
+public sealed class BottomNavigationBar(GameNavigation navigation, GameScreen activeScreen, IAudioService audioService) : IDisposable
 {
     private readonly SKPaint _fill = new() { IsAntialias = true };
     private readonly SKPaint _stroke = new() { IsAntialias = true, Style = SKPaintStyle.Stroke, StrokeWidth = 10f, StrokeCap = SKStrokeCap.Round, StrokeJoin = SKStrokeJoin.Round };
@@ -28,10 +29,12 @@ public sealed class BottomNavigationBar(GameNavigation navigation, GameScreen ac
     public void HandleInput(GameInput input)
     {
         if (input.Type != GameInputType.Released) return;
-        if (HitTest.Contains(HomeBounds, input.Position)) navigation.NavigateTo(GameScreen.Home);
-        else if (HitTest.Contains(GamesBounds, input.Position)) navigation.NavigateTo(GameScreen.Games);
-        else if (HitTest.Contains(ProgressBounds, input.Position)) navigation.NavigateTo(GameScreen.Progress);
+        if (HitTest.Contains(HomeBounds, input.Position)) Navigate(GameScreen.Home);
+        else if (HitTest.Contains(GamesBounds, input.Position)) Navigate(GameScreen.Games);
+        else if (HitTest.Contains(ProgressBounds, input.Position)) Navigate(GameScreen.Progress);
     }
+
+    private void Navigate(GameScreen screen) { audioService.PlayEffect(AudioCue.Tap); navigation.NavigateTo(screen); }
 
     private void DrawItem(SKCanvas canvas, GameRectangle bounds, GameScreen screen, string label)
     {
