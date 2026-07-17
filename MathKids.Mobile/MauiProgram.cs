@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 
 namespace MathKids.Mobile;
-
+// prueba git
 public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
