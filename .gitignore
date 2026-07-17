@@ -1,0 +1,14 @@
+.vs/
+.vscode/
+.idea/
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userprefs
+TestResults/
+artifacts/
+*.apk
+*.aab
+*.keystore
+local.properties
