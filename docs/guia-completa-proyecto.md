@@ -1210,6 +1210,236 @@ El dashboard utiliza `AndeanDashboardBackdrop`, iconos SkiaSharp propios y cuatr
 
 El juego del Puma alterna galletas, caramelos y chupetes. El Bingo incorpora un Condor animado con estados de vuelo, celebracion y animo. Los personajes y fondos se actualizan desde el mismo `GameLoop`, sin temporizadores adicionales.
 
+## 32. Agregar PNG y WebP al canvas
+
+### Rutas recomendadas
+
+```text
+MathKids.Mobile/Resources/Raw/Game/
+|-- Backgrounds/
+|   |-- home_andes.webp
+|   |-- addition_world.webp
+|   |-- bingo_condor.webp
+|   |-- puma_andes.webp
+|   `-- chanka_lab.webp
+|-- Characters/
+|   |-- fox_idle.webp
+|   |-- fox_happy.webp
+|   |-- puma_idle.webp
+|   |-- puma_happy.webp
+|   |-- condor_idle.webp
+|   `-- chanka_yachaq.webp
+|-- Objects/
+|   |-- cookie.webp
+|   |-- candy.webp
+|   `-- lollipop.webp
+`-- Ui/
+    |-- logo.webp
+    |-- coin.webp
+    `-- icons/
+```
+
+Usar nombres en minusculas, sin espacios ni tildes. WebP es recomendable para produccion porque reduce el APK y admite transparencia. PNG es adecuado para recursos temporales, interfaces sin perdida y archivos que siguen en diseno.
+
+`MathKids.Mobile.csproj` ya incluye:
+
+```xml
+<MauiAsset Include="Resources\Raw\**"
+           LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+```
+
+Por eso la ruta logica omite `Resources/Raw`:
+
+```csharp
+await using var stream = await FileSystem.OpenAppPackageFileAsync(
+    "Game/Characters/condor_idle.webp");
+```
+
+### Precargar antes del game loop
+
+La lectura fisica se hace en `MathKids.Mobile`; `MathKids.Game` solo recibe los bitmaps mediante `AssetManager`:
+
+```csharp
+public sealed class GameAssetPreloader(AssetManager assets)
+{
+    private bool _loaded;
+
+    public async Task EnsureLoadedAsync()
+    {
+        if (_loaded) return;
+
+        await LoadAsync("home_background", "Game/Backgrounds/home_andes.webp");
+        await LoadAsync("fox_idle", "Game/Characters/fox_idle.webp");
+        await LoadAsync("puma_idle", "Game/Characters/puma_idle.webp");
+        await LoadAsync("condor_idle", "Game/Characters/condor_idle.webp");
+        await LoadAsync("chanka_yachaq", "Game/Characters/chanka_yachaq.webp");
+        _loaded = true;
+    }
+
+    private async Task LoadAsync(string key, string logicalPath)
+    {
+        await using var stream = await FileSystem.OpenAppPackageFileAsync(logicalPath);
+        assets.Add(key, stream);
+    }
+}
+```
+
+Registrar `GameAssetPreloader` en `AddMathKidsMobile()` y ejecutar `EnsureLoadedAsync()` antes de `GameController.Start()`.
+
+No utilizar `SKBitmap.Decode`, `OpenAppPackageFileAsync` ni `AssetManager.Add` dentro de `Draw` o `Update`. Estas funciones se ejecutan aproximadamente 60 veces por segundo.
+
+### Inyectar y dibujar
+
+```csharp
+private readonly AssetManager _assets;
+private SKBitmap? _pumaBitmap;
+
+public PumaAdditionScene(AssetManager assets /* otros servicios */)
+{
+    _assets = assets;
+}
+
+public override void Enter()
+{
+    _pumaBitmap = _assets.Get("puma_idle");
+    LoadNextExercise();
+}
+
+private void DrawPumaImage(SKCanvas canvas, float bob)
+{
+    if (_pumaBitmap is null) return;
+    var destination = new SKRect(55f, 280f + bob, 410f, 615f + bob);
+    canvas.DrawBitmap(_pumaBitmap, destination);
+}
+```
+
+Para cambiar expresiones se precargan varias claves (`puma_idle`, `puma_happy`, `puma_encouraging`) y se selecciona una segun `PumaMood`.
+
+El `SKRect` utiliza coordenadas logicas de 1080x1920. La imagen solo cambia el dibujo; los `GameRectangle` de botones y zonas tactiles deben conservarse.
+
+### Fondo cover para movil y tablet
+
+```csharp
+private static SKRect CalculateCover(SKBitmap bitmap, GameViewport viewport)
+{
+    var visibleWidth = viewport.VisibleLogicalRight - viewport.VisibleLogicalLeft;
+    var visibleHeight = viewport.VisibleLogicalBottom - viewport.VisibleLogicalTop;
+    var scale = Math.Max(visibleWidth / bitmap.Width, visibleHeight / bitmap.Height);
+    var width = bitmap.Width * scale;
+    var height = bitmap.Height * scale;
+    var left = viewport.VisibleLogicalLeft + (visibleWidth - width) / 2f;
+    var top = viewport.VisibleLogicalTop + (visibleHeight - height) / 2f;
+    return new SKRect(left, top, left + width, top + height);
+}
+```
+
+```csharp
+canvas.DrawBitmap(background, CalculateCover(background, viewport));
+```
+
+Usar `cover` para fondos y rectangulos fijos tipo `contain` para personajes e iconos.
+
+### Reglas de exportacion
+
+- Personajes y objetos: fondo transparente.
+- Fondos: imagen completa sin transparencia.
+- Recortar espacio transparente innecesario.
+- Mantener el mismo punto de apoyo entre estados de una mascota.
+- No exportar fondos mucho mayores a 1080x1920 sin necesidad.
+- Mantener textos, numeros, dialogos, progreso y particulas en SkiaSharp.
+
+## 33. Agregar sonidos
+
+### Carpetas exactas
+
+```text
+MathKids.Mobile/Resources/Raw/Audio/
+|-- Effects/
+|   |-- tap.wav
+|   |-- correct.wav
+|   |-- try_again.wav
+|   |-- star.wav
+|   `-- whoosh.wav
+`-- Music/
+    |-- menu_theme.mp3
+    |-- puma_theme.mp3
+    |-- condor_theme.mp3
+    `-- chanka_lab_theme.mp3
+```
+
+Las rutas logicas son `Audio/Effects/correct.wav` y `Audio/Music/menu_theme.mp3`. Usar WAV para efectos breves y MP3, OGG o M4A para musica.
+
+### Estado actual
+
+El contrato esta en `MathKids.Application/Abstractions/IAudioService.cs`:
+
+```csharp
+public interface IAudioService
+{
+    void PlayEffect(AudioCue cue);
+}
+
+public enum AudioCue
+{
+    Tap,
+    Correct,
+    TryAgain
+}
+```
+
+La implementacion registrada es `NullAudioService`, por eso actualmente no se escucha nada aunque las escenas llamen `PlayEffect`.
+
+Mapeo recomendado:
+
+```text
+AudioCue.Tap       -> Audio/Effects/tap.wav
+AudioCue.Correct   -> Audio/Effects/correct.wav
+AudioCue.TryAgain  -> Audio/Effects/try_again.wav
+```
+
+Crear `MauiAudioService`, cargar esos clips una sola vez y reemplazar en `MathKids.Infrastructure/DependencyInjection/ServiceCollectionExtensions.cs`:
+
+```csharp
+services.AddSingleton<IAudioService, NullAudioService>();
+```
+
+por:
+
+```csharp
+services.AddSingleton<IAudioService, MauiAudioService>();
+```
+
+La implementacion puede usar una biblioteca MAUI de audio o servicios nativos. Se debe verificar la API de la biblioteca elegida para la version instalada.
+
+### Musica, volumen y mute
+
+Para conectar el boton visual de audio, ampliar el contrato:
+
+```csharp
+public interface IAudioService
+{
+    bool IsMuted { get; }
+    void PlayEffect(AudioCue cue);
+    void PlayMusic(MusicCue cue, bool loop = true);
+    void StopMusic();
+    void SetMuted(bool muted);
+    void SetVolume(float volume);
+}
+```
+
+Guardar mute y volumen mediante `ILocalSettings`. La musica debe comenzar al entrar a una escena y detenerse o cambiar al salir, nunca desde `Draw` o `Update`.
+
+Reglas:
+
+- Precargar efectos pequenos al iniciar.
+- Reutilizar reproductores y buffers.
+- No abrir archivos en cada respuesta.
+- Evitar musicas simultaneas.
+- Pausar al enviar la aplicacion a segundo plano.
+- Respetar mute antes de reproducir cualquier clip.
+
+La version resumida se encuentra en `docs/asset-migration.md`.
+
 | Configurar inicio Android | MathKids.Mobile |
 | Agregar pruebas | MathKids.Tests |
 
