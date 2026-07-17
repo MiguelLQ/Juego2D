@@ -5,6 +5,7 @@ using MathKids.Domain.Exercises;
 using MathKids.Game.Common;
 using MathKids.Game.Components.Buttons;
 using MathKids.Game.Core;
+using MathKids.Game.Graphics.Drawing;
 using MathKids.Game.Input.Touch;
 using MathKids.Game.Scenes.Abstractions;
 using SkiaSharp;
@@ -22,11 +23,13 @@ public sealed class AdditionDemoScene : KidsSceneBase
     private readonly AnswerFeedbackSequence _feedbackSequence = new();
     private readonly SKPaint _celebrationPaint = new() { IsAntialias = true };
     private readonly SKPathEffect _dashedBorder = SKPathEffect.CreateDash([18f, 14f], 0f);
+    private readonly AdditionAdventureBackdrop _backdrop = new();
     private MathExercise? _exercise;
     private GraphicButton? _selectedButton;
     private int _roundCorrectAnswers;
     private string _message = "Elige la respuesta correcta";
     private SKColor _messageColor = new(37, 75, 126);
+    private float _elapsed;
 
     public AdditionDemoScene(IExerciseGenerator exerciseGenerator, IGameSessionService sessionService, IAudioService audioService, GameNavigation navigation, PlayerGameState state)
     {
@@ -55,6 +58,8 @@ public sealed class AdditionDemoScene : KidsSceneBase
 
     public override void Update(GameTime gameTime)
     {
+        _elapsed += gameTime.DeltaSeconds;
+        _backdrop.Update(gameTime);
         for (var index = 0; index < _answerButtons.Length; index++) _answerButtons[index].Update(gameTime);
         var completion = _feedbackSequence.Update(gameTime.DeltaSeconds);
         if (completion == AnswerFeedbackCompletion.Retry)
@@ -73,11 +78,12 @@ public sealed class AdditionDemoScene : KidsSceneBase
 
     public override void Draw(SKCanvas canvas, GameViewport viewport)
     {
-        DrawWorldBackground(canvas, viewport);
+        _backdrop.Draw(canvas, viewport);
         DrawBrandHeader(canvas, 165f, 0.88f);
         DrawCoinBadge(canvas, _state.Coins);
+        DrawAudioButton(canvas);
         DrawBackButton(canvas);
-        DrawFoxMascot(canvas, -115f);
+        DrawFoxMascot(canvas, -115f, MathF.Sin(_elapsed * 2.5f) * 9f);
         DrawRoundProgress(canvas);
 
         FillPaint.Color = new SKColor(255, 249, 234);
@@ -194,6 +200,7 @@ public sealed class AdditionDemoScene : KidsSceneBase
         for (var index = 0; index < _answerButtons.Length; index++) _answerButtons[index].Dispose();
         _celebrationPaint.Dispose();
         _dashedBorder.Dispose();
+        _backdrop.Dispose();
         base.Dispose();
     }
 }

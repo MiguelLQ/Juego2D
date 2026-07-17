@@ -26,4 +26,17 @@ public sealed class GameViewportTests
         Assert.Equal(logical.X, result.X, 3);
         Assert.Equal(logical.Y, result.Y, 3);
     }
+
+    [Fact]
+    public void Resize_TabletSurface_ExposesBackgroundBleedArea()
+    {
+        var viewport = new GameViewport(1080f, 1920f);
+
+        viewport.Resize(1600f, 1920f);
+
+        Assert.Equal(-260f, viewport.VisibleLogicalLeft, 3);
+        Assert.Equal(1340f, viewport.VisibleLogicalRight, 3);
+        Assert.Equal(0f, viewport.VisibleLogicalTop, 3);
+        Assert.Equal(1920f, viewport.VisibleLogicalBottom, 3);
+    }
 }

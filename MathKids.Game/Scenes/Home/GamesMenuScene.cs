@@ -34,12 +34,13 @@ public sealed class GamesMenuScene : KidsSceneBase
         DrawWorldBackground(canvas, viewport);
         DrawBrandHeader(canvas, 175f, 0.92f);
         DrawCoinBadge(canvas, _state.Coins);
+        DrawAudioButton(canvas);
         TextPaint.TextSize = 57f; TextPaint.Color = new SKColor(29, 69, 122);
         canvas.DrawText("Elige tu aventura", 540f, 335f, TextPaint);
         DrawModule(canvas, AdditionBounds, new SKColor(96, 181, 246), "7 + 5", "Aventura de sumas", "Resuelve y gana estrellas", true);
-        DrawModule(canvas, BingoBounds, new SKColor(151, 211, 70), "BINGO", "Bingo de sumas", "Completa tu tablero", true);
-        DrawModule(canvas, ComingOneBounds, new SKColor(247, 169, 75), "?", "Pr\u00F3ximo juego", "Nueva aventura en camino", false);
-        DrawModule(canvas, ComingTwoBounds, new SKColor(183, 132, 226), "?", "Pr\u00F3ximo juego", "Nueva aventura en camino", false);
+        DrawModule(canvas, BingoBounds, new SKColor(151, 211, 70), "C\u00D3NDOR", "Bingo del C\u00F3ndor", "Completa el tablero andino", true);
+        DrawModule(canvas, ComingOneBounds, new SKColor(247, 169, 75), "2 + 4", "Sumemos con el Puma", "Cuenta galletas en los Andes", true);
+        DrawModule(canvas, ComingTwoBounds, new SKColor(118, 82, 151), "LAB", "Laboratorio Chanka", "Activa esferas de sabidur\u00EDa", true);
         _navigationBar.Draw(canvas);
     }
 
@@ -47,6 +48,8 @@ public sealed class GamesMenuScene : KidsSceneBase
     {
         if (IsReleasedInside(input, AdditionBounds)) _navigation.NavigateTo(GameScreen.Addition);
         else if (IsReleasedInside(input, BingoBounds)) _navigation.NavigateTo(GameScreen.AdditionBingo);
+        else if (IsReleasedInside(input, ComingOneBounds)) _navigation.NavigateTo(GameScreen.PumaAddition);
+        else if (IsReleasedInside(input, ComingTwoBounds)) _navigation.NavigateTo(GameScreen.ChancaLaboratory);
         else _navigationBar.HandleInput(input);
     }
 

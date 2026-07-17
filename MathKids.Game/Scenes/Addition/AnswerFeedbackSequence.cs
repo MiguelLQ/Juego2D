@@ -2,9 +2,15 @@ namespace MathKids.Game.Scenes.Addition;
 
 public sealed class AnswerFeedbackSequence
 {
-    private const float IncorrectDurationSeconds = 0.7f;
-    private const float CorrectDurationSeconds = 1.35f;
+    private readonly float _incorrectDurationSeconds;
+    private readonly float _correctDurationSeconds;
     private float _duration;
+
+    public AnswerFeedbackSequence(float incorrectDurationSeconds = 0.7f, float correctDurationSeconds = 1.35f)
+    {
+        _incorrectDurationSeconds = Math.Max(0.1f, incorrectDurationSeconds);
+        _correctDurationSeconds = Math.Max(0.1f, correctDurationSeconds);
+    }
 
     public AnswerFeedbackState State { get; private set; }
     public float ElapsedSeconds { get; private set; }
@@ -14,7 +20,7 @@ public sealed class AnswerFeedbackSequence
     public void Start(bool isCorrect)
     {
         State = isCorrect ? AnswerFeedbackState.Correct : AnswerFeedbackState.Incorrect;
-        _duration = isCorrect ? CorrectDurationSeconds : IncorrectDurationSeconds;
+        _duration = isCorrect ? _correctDurationSeconds : _incorrectDurationSeconds;
         ElapsedSeconds = 0f;
     }
 

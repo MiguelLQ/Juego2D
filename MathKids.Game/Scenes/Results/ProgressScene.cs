@@ -26,7 +26,9 @@ public sealed class ProgressScene : KidsSceneBase
         _lastGameText = _state.LastGame switch
         {
             "addition" => "\u00DAltimo juego: Aventura de sumas",
-            "addition_bingo" => "\u00DAltimo juego: Bingo de sumas",
+            "addition_bingo" => "\u00DAltimo juego: Bingo del C\u00F3ndor",
+            "puma_addition" => "\u00DAltimo juego: Sumemos con el Puma",
+            "chanca_laboratory" => "\u00DAltimo juego: Laboratorio Chanka",
             _ => "A\u00FAn no hay partidas guardadas"
         };
         _lastPlayedText = _state.UpdatedAtUtc == DateTimeOffset.UnixEpoch
@@ -41,6 +43,7 @@ public sealed class ProgressScene : KidsSceneBase
         DrawWorldBackground(canvas, viewport);
         DrawBrandHeader(canvas, 175f, 0.92f);
         DrawCoinBadge(canvas, _state.Coins);
+        DrawAudioButton(canvas);
         TextPaint.TextSize = 58f; TextPaint.Color = new SKColor(29, 69, 122);
         canvas.DrawText("Mi progreso", 540f, 335f, TextPaint);
 

@@ -12,6 +12,10 @@ public sealed class GameViewport
     public float Scale { get; private set; } = 1f;
     public float OffsetX { get; private set; }
     public float OffsetY { get; private set; }
+    public float VisibleLogicalLeft => -OffsetX / Scale;
+    public float VisibleLogicalTop => -OffsetY / Scale;
+    public float VisibleLogicalRight => (PhysicalWidth - OffsetX) / Scale;
+    public float VisibleLogicalBottom => (PhysicalHeight - OffsetY) / Scale;
 
     public void Resize(float physicalWidth, float physicalHeight)
     {

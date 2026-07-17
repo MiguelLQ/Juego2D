@@ -22,11 +22,15 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<GamesMenuScene>();
         services.AddSingleton<AdditionDemoScene>();
         services.AddSingleton<AdditionBingoScene>();
+        services.AddSingleton<PumaAdditionScene>();
+        services.AddSingleton<ChancaLaboratoryScene>();
         services.AddSingleton<ProgressScene>();
         services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<HomeScene>());
         services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<GamesMenuScene>());
         services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<AdditionDemoScene>());
         services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<AdditionBingoScene>());
+        services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<PumaAdditionScene>());
+        services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<ChancaLaboratoryScene>());
         services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<ProgressScene>());
         services.AddSingleton<SceneManager>();
         services.AddSingleton<GameController>();

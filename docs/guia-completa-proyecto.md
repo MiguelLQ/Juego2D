@@ -1140,6 +1140,76 @@ MathKids.Mobile/DependencyInjection/ServiceCollectionExtensions.cs
 Cada respuesta actualiza SQLite fuera de `Update` y `Draw`. La pantalla de Progreso vuelve a cargar los datos al entrar y muestra el último juego y la fecha guardada.
 
 El esquema utiliza `PRAGMA user_version = 1`. Cuando se agreguen nuevas columnas se debe implementar una migración incremental en lugar de eliminar la base existente.
+---
+
+## 27. Juego Sumemos con el Puma
+
+El tercer modulo presenta sumas mediante objetos concretos. Cada ejercicio dibuja dos grupos de galletas sobre una mesa, los separa con el signo `+` y ofrece tres respuestas grandes.
+
+Archivos principales:
+
+```text
+MathKids.Application/Exercises/IPumaExerciseGenerator.cs
+MathKids.Application/Exercises/PumaExerciseGenerator.cs
+MathKids.Game/Scenes/Addition/PumaAdditionScene.cs
+MathKids.Game/Components/Characters/PumaGuide.cs
+```
+
+El generador limita cada grupo a entre una y seis galletas y produce resultados de hasta doce. La escena registra la actividad con la clave `puma_addition`, por lo que sus puntos, aciertos, intentos y ultima partida quedan guardados en SQLite.
+
+Si el nino falla, el boton se marca temporalmente y el puma muestra un mensaje de apoyo antes de habilitar nuevamente las respuestas. Si acierta, el puma felicita, se guardan las recompensas y se carga un ejercicio nuevo.
+
+## 28. Fondos separados por juego
+
+Los fondos estan en `MathKids.Game/Graphics/Drawing/GameBackdrops.cs` y tienen tres implementaciones independientes:
+
+- `AdditionAdventureBackdrop`: cielo, nubes y colinas de la aventura clasica.
+- `BingoFestivalBackdrop`: ambiente morado de fiesta, banderines y colinas.
+- `AndeanPumaBackdrop`: sol, nubes, nevados, terrazas y camino andino.
+
+Cada fondo implementa `IGameBackdrop`, recibe tiempo mediante `Update` y dibuja mediante `Draw`. Para cambiar solo el ambiente de un juego, se modifica su backdrop sin tocar las reglas matematicas ni los botones.
+
+## 29. Adaptacion a tablets
+
+`GameViewport` mantiene el contenido interactivo en una zona logica de 1080x1920. Sus propiedades `VisibleLogicalLeft`, `VisibleLogicalTop`, `VisibleLogicalRight` y `VisibleLogicalBottom` exponen el area adicional visible.
+
+Los fondos dibujan hasta esos limites, evitando barras vacias en tablets con relaciones de aspecto diferentes. Los botones permanecen centrados en la zona segura, conservando posiciones y deteccion tactil consistentes.
+
+Al sustituir fondos por PNG o WebP, la imagen debe cubrir los limites visibles y recortar el exceso, sin estirar los controles ni cambiar sus coordenadas logicas.
+
+## 30. Juego El Laboratorio Chanka
+
+El cuarto modulo adapta la idea de un laboratorio de sumas a un ambiente inspirado en la cultura Chanka. La interfaz utiliza patrones geometricos, muros de piedra, colores tierra, montanas, un yachaq animado y tecnologia fantastica de energia andina.
+
+Archivos principales:
+
+```text
+MathKids.Game/Scenes/Addition/ChancaLaboratoryScene.cs
+MathKids.Game/Components/Characters/ChancaGuide.cs
+MathKids.Game/Graphics/Drawing/GameBackdrops.cs
+```
+
+La escena reutiliza `IExerciseGenerator` para crear la suma y tres opciones. Cada opcion se presenta como una esfera numerica. Al tocarla:
+
+1. Se bloquean temporalmente las otras opciones.
+2. La esfera viaja visualmente por el conducto.
+3. El recipiente muestra burbujas y los valores usados en la suma.
+4. El yachaq cambia de expresion y muestra un dialogo.
+5. Si es correcta se guarda el progreso y aparece otro experimento.
+6. Si es incorrecta se permite probar nuevamente el mismo ejercicio.
+
+La actividad se guarda en SQLite con la clave `chanca_laboratory`. El fondo propio es `ChancaLaboratoryBackdrop` y puede reemplazarse por una ilustracion PNG o WebP sin modificar la logica del juego.
+
+Para cambiar los textos de apoyo se actualiza `SpeechBubble.Text` desde `ChancaLaboratoryScene`. Para cambiar el personaje provisional se reemplaza el dibujo de `ChancaGuide` por sprites conservando los estados `Curious`, `Celebrating` y `Encouraging`.
+
+## 31. Sistema visual profesional
+
+`MathKids.Game/Components/SpeechBubble.cs` centraliza los dialogos de las mascotas. Divide el texto en hasta tres lineas, reduce el tamano cuando es necesario y evita que las frases salgan de la nube.
+
+El dashboard utiliza `AndeanDashboardBackdrop`, iconos SkiaSharp propios y cuatro tarjetas compactas. Todas las pantallas muestran un boton visual de audio preparado para conectarse posteriormente con `IAudioService`.
+
+El juego del Puma alterna galletas, caramelos y chupetes. El Bingo incorpora un Condor animado con estados de vuelo, celebracion y animo. Los personajes y fondos se actualizan desde el mismo `GameLoop`, sin temporizadores adicionales.
+
 | Configurar inicio Android | MathKids.Mobile |
 | Agregar pruebas | MathKids.Tests |
 

@@ -21,4 +21,7 @@
     <ProjectReference Include="..\MathKids.Game\MathKids.Game.csproj" />
     <ProjectReference Include="..\MathKids.Infrastructure\MathKids.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\Raw\Game\" />
+  </ItemGroup>
 </Project>

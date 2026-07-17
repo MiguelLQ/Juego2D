@@ -54,6 +54,15 @@ Implementa `IExerciseGenerator` en Application o crea un contrato específico cu
 - Mantener un solo temporizador de cuadros y limitar el delta al reanudar.
 - Liberar recursos SkiaSharp descartables.
 
+## Juegos actuales
+
+- `Aventura de sumas`: operacion numerica, tres respuestas y fondo de aventura.
+- `Bingo del Condor`: tablero 3x3, mascota animada y fondo de festival andino.
+- `Sumemos con el Puma`: conteo de galletas sobre una mesa, mensajes de apoyo y paisaje andino animado.
+- `Laboratorio Chanka`: esferas numericas, conductos animados, recipiente de reaccion y dialogos del yachaq.
+
+Los fondos llenan el area visible adicional de tablets mientras el contenido interactivo conserva una zona logica segura de 1080x1920.
+
 ## Alcance actual
 
 La interfaz usa formas y texto SkiaSharp para que pueda validarse antes de incorporar PNG o WebP. El servicio de audio es provisional y silencioso. SQLite conserva el progreso del perfil local; aún no existen perfiles múltiples, backend, sincronización ni compras.

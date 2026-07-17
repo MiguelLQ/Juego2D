@@ -6,5 +6,7 @@ public enum GameScreen
     Games,
     Addition,
     AdditionBingo,
+    PumaAddition,
+    ChancaLaboratory,
     Progress
 }

@@ -11,6 +11,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMathKidsApplication(this IServiceCollection services)
     {
         services.AddSingleton<IExerciseGenerator, AdditionExerciseGenerator>();
+        services.AddSingleton<IPumaExerciseGenerator, PumaExerciseGenerator>();
         services.AddSingleton<IGameSessionService, GameSessionService>();
         services.AddSingleton<IProgressService, ProgressService>();
         services.AddSingleton<IRewardService, RewardService>();
