@@ -1,6 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><TargetFramework>net10.0</TargetFramework><RootNamespace>MathKids.Game</RootNamespace></PropertyGroup>
   <ItemGroup>
+    <None Remove="Graphics\Assets\logo1.webp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Graphics\Assets\logo1.webp" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\MathKids.Domain\MathKids.Domain.csproj" />
     <ProjectReference Include="..\MathKids.Application\MathKids.Application.csproj" />
   </ItemGroup>

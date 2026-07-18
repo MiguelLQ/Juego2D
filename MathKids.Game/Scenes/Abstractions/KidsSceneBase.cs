@@ -23,6 +23,17 @@ public abstract class KidsSceneBase : IGameScene, IDisposable
     {
         _leftEar.MoveTo(140f, 550f); _leftEar.LineTo(205f, 350f); _leftEar.LineTo(290f, 545f); _leftEar.Close();
         _rightEar.MoveTo(325f, 545f); _rightEar.LineTo(415f, 350f); _rightEar.LineTo(470f, 570f); _rightEar.Close();
+
+        // Carga directa del logo desde los recursos embebidos del proyecto Game
+        var assembly = typeof(KidsSceneBase).Assembly;
+
+        // NOTA: Asegúrate de que la ruta coincida con el espacio de nombres de tu carpeta de Assets
+        using var stream = assembly.GetManifestResourceStream("MathKids.Game.Graphics.Assets.logo1.webp");
+
+        if (stream != null)
+        {
+            LogoBitmap = SKBitmap.Decode(stream);
+        }
     }
 
     public abstract GameScreen Screen { get; }
@@ -50,20 +61,45 @@ public abstract class KidsSceneBase : IGameScene, IDisposable
         canvas.DrawPath(_shapePath, FillPaint);
     }
 
+    protected SKBitmap? LogoBitmap;
     protected void DrawBrandHeader(SKCanvas canvas, float y, float scale = 1f)
     {
-        TextPaint.TextSize = 86f * scale;
-        StrokePaint.TextSize = TextPaint.TextSize;
-        StrokePaint.TextAlign = SKTextAlign.Center;
-        StrokePaint.Typeface = TextPaint.Typeface;
-        StrokePaint.StrokeWidth = 18f * scale;
-        StrokePaint.Color = SKColors.White;
-        canvas.DrawText("Mate", 360f, y, StrokePaint);
-        canvas.DrawText("Aventura", 685f, y, StrokePaint);
-        TextPaint.Color = new SKColor(244, 104, 47);
-        canvas.DrawText("Mate", 360f, y, TextPaint);
-        TextPaint.Color = new SKColor(42, 136, 224);
-        canvas.DrawText("Aventura", 685f, y, TextPaint);
+        if (LogoBitmap == null)
+        {
+            // ... (Tu código de respaldo por si el bitmap es nulo se queda igual) ...
+            TextPaint.TextSize = 86f * scale;
+            StrokePaint.TextSize = TextPaint.TextSize;
+            StrokePaint.TextAlign = SKTextAlign.Center;
+            StrokePaint.Typeface = TextPaint.Typeface;
+            StrokePaint.StrokeWidth = 18f * scale;
+            StrokePaint.Color = SKColors.White;
+            canvas.DrawText("Mate ggg", 360f, y, StrokePaint);
+            canvas.DrawText("Aventura", 685f, y, StrokePaint);
+            TextPaint.Color = new SKColor(244, 104, 47);
+            canvas.DrawText("Mate", 360f, y, TextPaint);
+            TextPaint.Color = new SKColor(42, 136, 224);
+            canvas.DrawText("Aventura", 685f, y, TextPaint);
+            return;
+        }
+
+        // 1. Definimos la ALTURA base que queremos para el logo (por ejemplo, 150)
+        float desiredHeight = 300f * scale;
+
+        // 2. Calculamos la proporción real de tu imagen (Ancho / Alto)
+        float aspectRatio = (float)LogoBitmap.Width / LogoBitmap.Height;
+
+        // 3. Calculamos el ANCHO automático multiplicando la altura por la proporción
+        float desiredWidth = desiredHeight * aspectRatio;
+
+        // 4. Centramos horizontalmente en base al nuevo ancho calculado
+        // (Usamos 522f que era el centro aproximado de tu diseño original)
+        float targetX = 522f - (desiredWidth / 2f);
+        float targetY = y - (desiredHeight / 1.2f);
+
+        // 5. Creamos el rectángulo perfecto y dibujamos sin deformaciones
+        SKRect destRect = new SKRect(targetX, targetY, targetX + desiredWidth, targetY + desiredHeight);
+
+        canvas.DrawBitmap(LogoBitmap, destRect, FillPaint);
     }
 
     protected void DrawCoinBadge(SKCanvas canvas, int coins)

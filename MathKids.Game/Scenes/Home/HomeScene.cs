@@ -47,10 +47,12 @@ public sealed class HomeScene : KidsSceneBase
         FillPaint.Color = new SKColor(255, 255, 255, 242);
         canvas.DrawRoundRect(new SKRect(500f, 315f + bob, 1000f, 560f + bob), 65f, 65f, ShadowPaint);
         canvas.DrawRoundRect(new SKRect(485f, 300f + bob, 985f, 545f + bob), 65f, 65f, FillPaint);
-        TextPaint.TextSize = 52f; TextPaint.Color = new SKColor(30, 71, 126);
+        TextPaint.TextSize = 45f; TextPaint.Color = new SKColor(30, 71, 126);
         canvas.DrawText("\u00A1Hola, peque\u00F1o genio!", 735f, 395f + bob, TextPaint);
-        TextPaint.TextSize = 37f; TextPaint.Color = new SKColor(74, 101, 135);
-        canvas.DrawText("Elige una aventura y gana estrellas", 735f, 465f + bob, TextPaint);
+        TextPaint.TextSize = 37f;
+        TextPaint.Color = new SKColor(74, 101, 135);
+        canvas.DrawText("Elige una aventura", 735f, 465f + bob, TextPaint);
+        canvas.DrawText("y gana estrellas", 735f, 515f + bob, TextPaint);
 
         FillPaint.Color = new SKColor(255, 250, 235, 248);
         canvas.DrawRoundRect(new SKRect(55f, 860f, 1025f, 1615f), 76f, 76f, ShadowPaint);
@@ -58,7 +60,7 @@ public sealed class HomeScene : KidsSceneBase
         FillPaint.Color = new SKColor(116, 75, 213);
         canvas.DrawRoundRect(new SKRect(230f, 790f, 850f, 910f), 40f, 40f, FillPaint);
         TextPaint.TextSize = 44f; TextPaint.Color = SKColors.White;
-        canvas.DrawText("\u2605  Elige un juego  \u2605", 540f, 866f, TextPaint);
+        canvas.DrawText("Elige un juego", 540f, 866f, TextPaint);
 
         DrawGameCard(canvas, AdditionBounds, new SKColor(74, 167, 227), "Aventura", "de sumas", 0);
         DrawGameCard(canvas, BingoBounds, new SKColor(91, 178, 87), "Bingo", "del C\u00F3ndor", 1);
