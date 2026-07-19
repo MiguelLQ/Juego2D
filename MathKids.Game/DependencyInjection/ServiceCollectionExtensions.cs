@@ -16,10 +16,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(provider => { var configuration = provider.GetRequiredService<GameConfiguration>(); return new GameViewport(configuration.LogicalWidth, configuration.LogicalHeight); });
         services.AddSingleton<GameLoop>();
         services.AddSingleton<GameNavigation>();
+        services.AddSingleton<GameSelectionState>();
         services.AddSingleton<PlayerGameState>();
         services.AddSingleton<AssetManager>();
         services.AddSingleton<HomeScene>();
         services.AddSingleton<GamesMenuScene>();
+        services.AddSingleton<OperationSelectionScene>();
         services.AddSingleton<AdditionDemoScene>();
         services.AddSingleton<AdditionBingoScene>();
         services.AddSingleton<PumaAdditionScene>();
@@ -27,6 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ProgressScene>();
         services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<HomeScene>());
         services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<GamesMenuScene>());
+        services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<OperationSelectionScene>());
         services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<AdditionDemoScene>());
         services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<AdditionBingoScene>());
         services.AddSingleton<IGameScene>(provider => provider.GetRequiredService<PumaAdditionScene>());

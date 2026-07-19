@@ -21,6 +21,7 @@ public sealed class AdditionBingoScene : KidsSceneBase
     private readonly IRandomProvider _randomProvider;
     private readonly IAudioService _audioService;
     private readonly GameNavigation _navigation;
+    private readonly GameSelectionState _selection;
     private readonly PlayerGameState _state;
     private readonly GraphicButton[] _cells = new GraphicButton[9];
     private readonly AnswerFeedbackSequence _feedbackSequence = new(1.45f, 1.9f);
@@ -33,13 +34,14 @@ public sealed class AdditionBingoScene : KidsSceneBase
     private CondorMood _mood = CondorMood.Flying;
     private float _elapsed;
 
-    public AdditionBingoScene(IExerciseGenerator exerciseGenerator, IGameSessionService sessionService, IRandomProvider randomProvider, IAudioService audioService, GameNavigation navigation, PlayerGameState state)
+    public AdditionBingoScene(IExerciseGenerator exerciseGenerator, IGameSessionService sessionService, IRandomProvider randomProvider, IAudioService audioService, GameNavigation navigation, GameSelectionState selection, PlayerGameState state)
     {
         _exerciseGenerator = exerciseGenerator;
         _sessionService = sessionService;
         _randomProvider = randomProvider;
         _audioService = audioService;
         _navigation = navigation;
+        _selection = selection;
         _state = state;
         _speechBubble.Text = "Encuentra el resultado en el tablero";
         for (var index = 0; index < _cells.Length; index++)
@@ -105,7 +107,7 @@ public sealed class AdditionBingoScene : KidsSceneBase
         TextPaint.TextSize = 47f; TextPaint.Color = SKColors.White;
         canvas.DrawText("Bingo del C\u00F3ndor", 540f, 686f, TextPaint);
         TextPaint.TextSize = 77f; TextPaint.Color = new SKColor(18, 55, 112);
-        if (_exercise is not null) canvas.DrawText($"{_exercise.LeftOperand} + {_exercise.RightOperand} = ?", 540f, 830f, TextPaint);
+        if (_exercise is not null) canvas.DrawText($"{_exercise.LeftOperand} {_selection.Operation.Symbol()} {_exercise.RightOperand} = ?", 540f, 830f, TextPaint);
         for (var index = 0; index < _cells.Length; index++) _cells[index].Draw(canvas);
         TextPaint.TextSize = 36f; TextPaint.Color = new SKColor(34, 72, 122);
         canvas.DrawText($"BINGO: {_bingoPoints}/5", 540f, 1585f, TextPaint);
@@ -117,7 +119,7 @@ public sealed class AdditionBingoScene : KidsSceneBase
         if (IsReleasedInside(input, BackButtonBounds))
         {
             _audioService.PlayEffect(AudioCue.Tap);
-            _navigation.NavigateTo(GameScreen.Games);
+            _navigation.NavigateTo(GameScreen.OperationSelection);
             return;
         }
         if (_feedbackSequence.IsActive) return;
@@ -126,7 +128,7 @@ public sealed class AdditionBingoScene : KidsSceneBase
 
     private void LoadRound()
     {
-        _exercise = _exerciseGenerator.Generate(DifficultyLevel.Beginner);
+        _exercise = _exerciseGenerator.Generate(_selection.Operation, DifficultyLevel.Beginner);
         _selectedCell = null;
         _feedbackSequence.Reset();
         _mood = CondorMood.Flying;

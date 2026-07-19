@@ -20,6 +20,7 @@ public sealed class PumaAdditionScene : KidsSceneBase
     private readonly IGameSessionService _sessionService;
     private readonly IAudioService _audioService;
     private readonly GameNavigation _navigation;
+    private readonly GameSelectionState _selection;
     private readonly PlayerGameState _state;
     private readonly AndeanPumaBackdrop _backdrop = new();
     private readonly PumaGuide _puma = new();
@@ -34,12 +35,13 @@ public sealed class PumaAdditionScene : KidsSceneBase
     private int _itemSequence = -1;
     private float _elapsed;
 
-    public PumaAdditionScene(IPumaExerciseGenerator exerciseGenerator, IGameSessionService sessionService, IAudioService audioService, GameNavigation navigation, PlayerGameState state)
+    public PumaAdditionScene(IPumaExerciseGenerator exerciseGenerator, IGameSessionService sessionService, IAudioService audioService, GameNavigation navigation, GameSelectionState selection, PlayerGameState state)
     {
         _exerciseGenerator = exerciseGenerator;
         _sessionService = sessionService;
         _audioService = audioService;
         _navigation = navigation;
+        _selection = selection;
         _state = state;
         _speechBubble.Text = "Cuenta los objetos de la mesa";
         _answerButtons =
@@ -97,7 +99,7 @@ public sealed class PumaAdditionScene : KidsSceneBase
         if (IsReleasedInside(input, BackButtonBounds))
         {
             _audioService.PlayEffect(AudioCue.Tap);
-            _navigation.NavigateTo(GameScreen.Games);
+            _navigation.NavigateTo(GameScreen.OperationSelection);
             return;
         }
         if (_feedback.IsActive) return;
@@ -106,7 +108,7 @@ public sealed class PumaAdditionScene : KidsSceneBase
 
     private void LoadNextExercise()
     {
-        _exercise = _exerciseGenerator.Generate();
+        _exercise = _exerciseGenerator.Generate(_selection.Operation);
         _selectedButton = null;
         _feedback.Reset();
         _mood = PumaMood.Thinking;
@@ -166,7 +168,7 @@ public sealed class PumaAdditionScene : KidsSceneBase
         canvas.DrawRoundRect(new SKRect(220f, 58f, 790f, 190f), 54f, 54f, ShadowPaint);
         canvas.DrawRoundRect(new SKRect(210f, 48f, 780f, 180f), 54f, 54f, FillPaint);
         TextPaint.TextSize = 52f; TextPaint.Color = new SKColor(117, 73, 35);
-        canvas.DrawText("Sumemos con el Puma", 495f, 132f, TextPaint);
+        canvas.DrawText("Matem\u00E1ticas con el Puma", 495f, 132f, TextPaint);
     }
 
     private void DrawSpeechBubble(SKCanvas canvas)
@@ -189,7 +191,7 @@ public sealed class PumaAdditionScene : KidsSceneBase
         StrokePaint.Color = new SKColor(172, 108, 56, 100); StrokePaint.StrokeWidth = 5f;
         for (var y = 720f; y < 1200f; y += 115f) canvas.DrawLine(90f, y, 965f, y + 16f, StrokePaint);
         TextPaint.TextSize = 72f; TextPaint.Color = new SKColor(84, 56, 38);
-        canvas.DrawText("+", 405f, 950f, TextPaint);
+        canvas.DrawText(_selection.Operation.Symbol(), 405f, 950f, TextPaint);
         canvas.DrawText("=", 705f, 950f, TextPaint);
         TextPaint.TextSize = 100f; TextPaint.Color = new SKColor(120, 74, 191);
         canvas.DrawText("?", 875f, 963f, TextPaint);
@@ -247,9 +249,14 @@ public sealed class PumaAdditionScene : KidsSceneBase
 
     private string GetItemName() => _itemKind switch { CountingItemKind.Cookie => "galletas", CountingItemKind.Candy => "caramelos", _ => "chupetes" };
 
-    private string GetQuestion() => _itemKind == CountingItemKind.Cookie
-        ? "\u00BFCu\u00E1ntas galletas hay en total?"
-        : $"\u00BFCu\u00E1ntos {GetItemName()} hay en total?";
+    private string GetQuestion() => _selection.Operation switch
+    {
+        MathOperation.Subtraction => "\u00BFCu\u00E1ntos quedan despu\u00E9s de quitar?",
+        MathOperation.Multiplication => "\u00BFCu\u00E1ntos hay al formar los grupos?",
+        MathOperation.Division => "\u00BFCu\u00E1ntos corresponden a cada grupo?",
+        _ when _itemKind == CountingItemKind.Cookie => "\u00BFCu\u00E1ntas galletas hay en total?",
+        _ => $"\u00BFCu\u00E1ntos {GetItemName()} hay en total?"
+    };
 
     private void SetDialog(string text) => _speechBubble.Text = text;
 

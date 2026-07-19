@@ -20,6 +20,7 @@ public sealed class ChancaLaboratoryScene : KidsSceneBase
     private readonly IGameSessionService _sessionService;
     private readonly IAudioService _audioService;
     private readonly GameNavigation _navigation;
+    private readonly GameSelectionState _selection;
     private readonly PlayerGameState _state;
     private readonly ChancaLaboratoryBackdrop _backdrop = new();
     private readonly ChancaGuide _guide = new();
@@ -33,12 +34,13 @@ public sealed class ChancaLaboratoryScene : KidsSceneBase
     private int _selectedValue;
     private float _elapsed;
 
-    public ChancaLaboratoryScene(IExerciseGenerator exerciseGenerator, IGameSessionService sessionService, IAudioService audioService, GameNavigation navigation, PlayerGameState state)
+    public ChancaLaboratoryScene(IExerciseGenerator exerciseGenerator, IGameSessionService sessionService, IAudioService audioService, GameNavigation navigation, GameSelectionState selection, PlayerGameState state)
     {
         _exerciseGenerator = exerciseGenerator;
         _sessionService = sessionService;
         _audioService = audioService;
         _navigation = navigation;
+        _selection = selection;
         _state = state;
         _speechBubble.Text = "Activa el laboratorio con una respuesta";
         _answerButtons =
@@ -94,7 +96,7 @@ public sealed class ChancaLaboratoryScene : KidsSceneBase
         if (IsReleasedInside(input, BackButtonBounds))
         {
             _audioService.PlayEffect(AudioCue.Tap);
-            _navigation.NavigateTo(GameScreen.Games);
+            _navigation.NavigateTo(GameScreen.OperationSelection);
             return;
         }
         if (_feedback.IsActive) return;
@@ -116,12 +118,12 @@ public sealed class ChancaLaboratoryScene : KidsSceneBase
 
     private void LoadNextExperiment()
     {
-        _exercise = _exerciseGenerator.Generate(DifficultyLevel.Beginner);
+        _exercise = _exerciseGenerator.Generate(_selection.Operation, DifficultyLevel.Beginner);
         _selectedButton = null;
         _selectedValue = 0;
         _feedback.Reset();
         _mood = ChancaMood.Curious;
-        SetDialog("Elige la esfera que completa la suma");
+        SetDialog($"Elige la esfera que completa la {_selection.Operation.DisplayName().ToLowerInvariant()}");
         for (var index = 0; index < _answerButtons.Length; index++)
         {
             _answerButtons[index].Text = _exercise.Options[index].Value.ToString();
@@ -193,7 +195,7 @@ public sealed class ChancaLaboratoryScene : KidsSceneBase
         StrokePaint.Color = new SKColor(236, 177, 70); StrokePaint.StrokeWidth = 5f;
         canvas.DrawRoundRect(new SKRect(353f, 783f, 707f, 982f), 22f, 22f, StrokePaint);
         TextPaint.TextSize = 83f; TextPaint.Color = new SKColor(255, 244, 206);
-        if (_exercise is not null) canvas.DrawText($"{_exercise.LeftOperand} + {_exercise.RightOperand} = ?", 530f, 915f, TextPaint);
+        if (_exercise is not null) canvas.DrawText($"{_exercise.LeftOperand} {_selection.Operation.Symbol()} {_exercise.RightOperand} = ?", 530f, 915f, TextPaint);
 
         TextPaint.TextSize = 28f; TextPaint.Color = new SKColor(255, 218, 117);
         canvas.DrawText("ESFERAS", 187f, 795f, TextPaint);

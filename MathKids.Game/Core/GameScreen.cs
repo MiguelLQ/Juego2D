@@ -4,6 +4,7 @@ public enum GameScreen
 {
     Home,
     Games,
+    OperationSelection,
     Addition,
     AdditionBingo,
     PumaAddition,

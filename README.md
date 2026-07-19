@@ -56,12 +56,14 @@ Implementa `IExerciseGenerator` en Application o crea un contrato específico cu
 
 ## Juegos actuales
 
-- `Aventura de sumas`: operacion numerica, tres respuestas y fondo de aventura.
+- `Aventura Matematica`: suma, resta, multiplicacion o division con tres respuestas.
 - `Bingo del Condor`: tablero 3x3, mascota animada y fondo de festival andino.
-- `Sumemos con el Puma`: conteo de galletas sobre una mesa, mensajes de apoyo y paisaje andino animado.
+- `Matematicas con el Puma`: operaciones con galletas, caramelos o chupetes sobre una mesa andina.
 - `Laboratorio Chanka`: esferas numericas, conductos animados, recipiente de reaccion y dialogos del yachaq.
 
 Los fondos llenan el area visible adicional de tablets mientras el contenido interactivo conserva una zona logica segura de 1080x1920.
+
+Al tocar cualquiera de los cuatro modulos se abre primero un selector de operacion. La escena, mascota, objetos y fondo del modulo se conservan; solo cambian la operacion, los operandos y la respuesta correcta.
 
 ## Alcance actual
 

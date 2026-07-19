@@ -15,13 +15,15 @@ public sealed class GamesMenuScene : KidsSceneBase
     private static readonly GameRectangle ComingOneBounds = new(70f, 1010f, 450f, 470f);
     private static readonly GameRectangle ComingTwoBounds = new(560f, 1010f, 450f, 470f);
     private readonly GameNavigation _navigation;
+    private readonly GameSelectionState _selection;
     private readonly IAudioService _audioService;
     private readonly PlayerGameState _state;
     private readonly BottomNavigationBar _navigationBar;
 
-    public GamesMenuScene(GameNavigation navigation, PlayerGameState state, IAudioService audioService)
+    public GamesMenuScene(GameNavigation navigation, GameSelectionState selection, PlayerGameState state, IAudioService audioService)
     {
         _navigation = navigation;
+        _selection = selection;
         _state = state;
         _audioService = audioService;
         _navigationBar = new BottomNavigationBar(navigation, GameScreen.Games, audioService);
@@ -40,9 +42,9 @@ public sealed class GamesMenuScene : KidsSceneBase
         DrawAudioButton(canvas, _audioService.IsMuted);
         TextPaint.TextSize = 57f; TextPaint.Color = new SKColor(29, 69, 122);
         canvas.DrawText("Elige tu aventura", 540f, 335f, TextPaint);
-        DrawModule(canvas, AdditionBounds, new SKColor(96, 181, 246), "7 + 5", "Aventura de sumas", "Resuelve y gana estrellas", true);
+        DrawModule(canvas, AdditionBounds, new SKColor(96, 181, 246), "1 2 3", "Aventura Matem\u00E1tica", "Elige una operaci\u00F3n", true);
         DrawModule(canvas, BingoBounds, new SKColor(151, 211, 70), "C\u00D3NDOR", "Bingo del C\u00F3ndor", "Completa el tablero andino", true);
-        DrawModule(canvas, ComingOneBounds, new SKColor(247, 169, 75), "2 + 4", "Sumemos con el Puma", "Cuenta galletas en los Andes", true);
+        DrawModule(canvas, ComingOneBounds, new SKColor(247, 169, 75), "PUMA", "Matem\u00E1ticas con el Puma", "Cuenta objetos en los Andes", true);
         DrawModule(canvas, ComingTwoBounds, new SKColor(118, 82, 151), "LAB", "Laboratorio Chanka", "Activa esferas de sabidur\u00EDa", true);
         _navigationBar.Draw(canvas);
     }
@@ -50,14 +52,19 @@ public sealed class GamesMenuScene : KidsSceneBase
     public override void HandleInput(GameInput input)
     {
         if (TryHandleAudioButton(input, _audioService)) return;
-        if (IsReleasedInside(input, AdditionBounds)) NavigateTo(GameScreen.Addition);
-        else if (IsReleasedInside(input, BingoBounds)) NavigateTo(GameScreen.AdditionBingo);
-        else if (IsReleasedInside(input, ComingOneBounds)) NavigateTo(GameScreen.PumaAddition);
-        else if (IsReleasedInside(input, ComingTwoBounds)) NavigateTo(GameScreen.ChancaLaboratory);
+        if (IsReleasedInside(input, AdditionBounds)) SelectModule(GameModule.MathAdventure);
+        else if (IsReleasedInside(input, BingoBounds)) SelectModule(GameModule.CondorBingo);
+        else if (IsReleasedInside(input, ComingOneBounds)) SelectModule(GameModule.PumaMath);
+        else if (IsReleasedInside(input, ComingTwoBounds)) SelectModule(GameModule.ChankaLaboratory);
         else _navigationBar.HandleInput(input);
     }
 
-    private void NavigateTo(GameScreen screen) { _audioService.PlayEffect(AudioCue.Tap); _navigation.NavigateTo(screen); }
+    private void SelectModule(GameModule module)
+    {
+        _selection.SelectModule(module);
+        _audioService.PlayEffect(AudioCue.Tap);
+        _navigation.NavigateTo(GameScreen.OperationSelection);
+    }
 
     private void DrawModule(SKCanvas canvas, GameRectangle bounds, SKColor color, string icon, string title, string subtitle, bool enabled)
     {
@@ -66,7 +73,7 @@ public sealed class GamesMenuScene : KidsSceneBase
         canvas.DrawRoundRect(new SKRect(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom), 60f, 60f, FillPaint);
         FillPaint.Color = new SKColor(255, 255, 255, 225);
         canvas.DrawCircle(bounds.CenterX, bounds.Top + 145f, 105f, FillPaint);
-        TextPaint.TextSize = icon == "BINGO" ? 42f : 76f; TextPaint.Color = new SKColor(27, 64, 115);
+        TextPaint.TextSize = icon.Length > 5 ? 42f : 76f; TextPaint.Color = new SKColor(27, 64, 115);
         canvas.DrawText(icon, bounds.CenterX, bounds.Top + 170f, TextPaint);
         TextPaint.TextSize = 43f; TextPaint.Color = SKColors.White;
         canvas.DrawText(title, bounds.CenterX, bounds.Top + 305f, TextPaint);

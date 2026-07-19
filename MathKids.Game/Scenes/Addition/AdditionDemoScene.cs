@@ -18,6 +18,7 @@ public sealed class AdditionDemoScene : KidsSceneBase
     private readonly IGameSessionService _sessionService;
     private readonly IAudioService _audioService;
     private readonly GameNavigation _navigation;
+    private readonly GameSelectionState _selection;
     private readonly PlayerGameState _state;
     private readonly GraphicButton[] _answerButtons;
     private readonly AnswerFeedbackSequence _feedbackSequence = new();
@@ -31,12 +32,13 @@ public sealed class AdditionDemoScene : KidsSceneBase
     private SKColor _messageColor = new(37, 75, 126);
     private float _elapsed;
 
-    public AdditionDemoScene(IExerciseGenerator exerciseGenerator, IGameSessionService sessionService, IAudioService audioService, GameNavigation navigation, PlayerGameState state)
+    public AdditionDemoScene(IExerciseGenerator exerciseGenerator, IGameSessionService sessionService, IAudioService audioService, GameNavigation navigation, GameSelectionState selection, PlayerGameState state)
     {
         _exerciseGenerator = exerciseGenerator;
         _sessionService = sessionService;
         _audioService = audioService;
         _navigation = navigation;
+        _selection = selection;
         _state = state;
         _answerButtons =
         [
@@ -101,7 +103,7 @@ public sealed class AdditionDemoScene : KidsSceneBase
         canvas.DrawText("\u2605  Resuelve para ganar estrellas  \u2605", 530f, 777f, TextPaint);
 
         TextPaint.TextSize = 132f; TextPaint.Color = new SKColor(18, 55, 112);
-        if (_exercise is not null) canvas.DrawText($"{_exercise.LeftOperand} + {_exercise.RightOperand} = ?", 530f, 1075f, TextPaint);
+        if (_exercise is not null) canvas.DrawText($"{_exercise.LeftOperand} {_selection.Operation.Symbol()} {_exercise.RightOperand} = ?", 530f, 1075f, TextPaint);
         TextPaint.TextSize = 50f; TextPaint.Color = _messageColor;
         canvas.DrawText(_message, 530f, 1205f, TextPaint);
         for (var index = 0; index < _answerButtons.Length; index++) _answerButtons[index].Draw(canvas);
@@ -114,7 +116,7 @@ public sealed class AdditionDemoScene : KidsSceneBase
         if (IsReleasedInside(input, BackButtonBounds))
         {
             _audioService.PlayEffect(AudioCue.Tap);
-            _navigation.NavigateTo(GameScreen.Games);
+            _navigation.NavigateTo(GameScreen.OperationSelection);
             return;
         }
         if (_feedbackSequence.IsActive) return;
@@ -123,7 +125,7 @@ public sealed class AdditionDemoScene : KidsSceneBase
 
     private void LoadNextExercise()
     {
-        _exercise = _exerciseGenerator.Generate(DifficultyLevel.Beginner);
+        _exercise = _exerciseGenerator.Generate(_selection.Operation, DifficultyLevel.Beginner);
         _selectedButton = null;
         _feedbackSequence.Reset();
         _message = "Elige la respuesta correcta";

@@ -1429,6 +1429,65 @@ Reglas:
 
 La version resumida se encuentra en `docs/asset-migration.md`.
 
+## 34. Selector de operacion por modulo
+
+Los cuatro modulos ya no entran directamente a una suma. El flujo actual es:
+
+```text
+Inicio o Juegos
+    -> elegir modulo
+    -> elegir Suma, Resta, Multiplicacion o Division
+    -> abrir la escena del modulo
+```
+
+La pantalla comun esta en:
+
+```text
+MathKids.Game/Scenes/Home/OperationSelectionScene.cs
+```
+
+El estado temporal se conserva en:
+
+```text
+MathKids.Game/Core/GameSelectionState.cs
+```
+
+`GameSelectionState` guarda el modulo y la operacion elegida. Al seleccionar una operacion navega a la escena original:
+
+- `MathAdventure` abre `AdditionDemoScene`.
+- `CondorBingo` abre `AdditionBingoScene`.
+- `PumaMath` abre `PumaAdditionScene`.
+- `ChankaLaboratory` abre `ChancaLaboratoryScene`.
+
+Cada escena conserva su fondo, mascota, objetos, animaciones, dialogos, audio y recompensas. Solo cambia el simbolo matematico y el ejercicio generado.
+
+Reglas infantiles aplicadas:
+
+- Suma: operandos positivos.
+- Resta: nunca produce resultados negativos.
+- Multiplicacion: factores pequenos para nivel inicial.
+- Division: siempre es exacta y no produce decimales.
+
+El generador general esta en `MathKids.Application/Exercises/AdditionExerciseGenerator.cs`. El Puma utiliza limites visuales propios desde `PumaExerciseGenerator.cs` para no dibujar demasiados objetos sobre la mesa.
+
+El boton volver dentro de un juego regresa al selector de operacion. Desde alli se puede elegir otra operacion para el mismo modulo o volver al menu de juegos.
+
+La integracion de audio documentada en las secciones anteriores se conserva. La pantalla de seleccion utiliza la musica del menu y reproduce `AudioCue.Tap` al elegir una operacion.
+
+## 35. Dificultad inicial para 6 a 8 anos
+
+El nivel `Beginner`, utilizado actualmente por las cuatro escenas, fue ajustado para ninos de primer y segundo grado:
+
+- Suma: operandos entre 1 y 8; resultado maximo 16.
+- Resta: operandos entre 1 y 8 y resultados nunca negativos.
+- Multiplicacion: factores entre 1 y 3; resultado maximo 9.
+- Division: divisiones exactas construidas con factores entre 1 y 3; sin decimales.
+- Opciones incorrectas: valores cercanos a la respuesta correcta para evitar saltos confusos.
+
+El Puma utiliza los mismos limites bajos y restringe especialmente multiplicacion y division para no saturar la mesa con demasiados objetos.
+
+La pantalla `ProgressScene` utiliza iconos vectoriales SkiaSharp para estrellas, aciertos, intentos y monedas. No depende de emojis ni glifos especiales del dispositivo. La ultima actividad se presenta como una tarjeta con color del modulo, titulo y fecha de guardado.
+
 | Configurar inicio Android | MathKids.Mobile |
 | Agregar pruebas | MathKids.Tests |
 

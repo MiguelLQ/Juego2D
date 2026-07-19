@@ -16,15 +16,17 @@ public sealed class HomeScene : KidsSceneBase
     private static readonly GameRectangle PumaBounds = new(90f, 1300f, 420f, 230f);
     private static readonly GameRectangle ChancaBounds = new(570f, 1300f, 420f, 230f);
     private readonly GameNavigation _navigation;
+    private readonly GameSelectionState _selection;
     private readonly IAudioService _audioService;
     private readonly PlayerGameState _state;
     private readonly BottomNavigationBar _navigationBar;
     private readonly AndeanDashboardBackdrop _backdrop = new();
     private float _elapsed;
 
-    public HomeScene(GameNavigation navigation, PlayerGameState state, IAudioService audioService)
+    public HomeScene(GameNavigation navigation, GameSelectionState selection, PlayerGameState state, IAudioService audioService)
     {
         _navigation = navigation;
+        _selection = selection;
         _state = state;
         _audioService = audioService;
         _navigationBar = new BottomNavigationBar(navigation, GameScreen.Home, audioService);
@@ -62,7 +64,7 @@ public sealed class HomeScene : KidsSceneBase
         TextPaint.TextSize = 44f; TextPaint.Color = SKColors.White;
         canvas.DrawText("Elige un juego", 540f, 866f, TextPaint);
 
-        DrawGameCard(canvas, AdditionBounds, new SKColor(74, 167, 227), "Aventura", "de sumas", 0);
+        DrawGameCard(canvas, AdditionBounds, new SKColor(74, 167, 227), "Aventura", "matem\u00E1tica", 0);
         DrawGameCard(canvas, BingoBounds, new SKColor(91, 178, 87), "Bingo", "del C\u00F3ndor", 1);
         DrawPumaCard(canvas);
         DrawChancaCard(canvas);
@@ -72,14 +74,19 @@ public sealed class HomeScene : KidsSceneBase
     public override void HandleInput(GameInput input)
     {
         if (TryHandleAudioButton(input, _audioService)) return;
-        if (IsReleasedInside(input, AdditionBounds)) NavigateTo(GameScreen.Addition);
-        else if (IsReleasedInside(input, BingoBounds)) NavigateTo(GameScreen.AdditionBingo);
-        else if (IsReleasedInside(input, PumaBounds)) NavigateTo(GameScreen.PumaAddition);
-        else if (IsReleasedInside(input, ChancaBounds)) NavigateTo(GameScreen.ChancaLaboratory);
+        if (IsReleasedInside(input, AdditionBounds)) SelectModule(GameModule.MathAdventure);
+        else if (IsReleasedInside(input, BingoBounds)) SelectModule(GameModule.CondorBingo);
+        else if (IsReleasedInside(input, PumaBounds)) SelectModule(GameModule.PumaMath);
+        else if (IsReleasedInside(input, ChancaBounds)) SelectModule(GameModule.ChankaLaboratory);
         else _navigationBar.HandleInput(input);
     }
 
-    private void NavigateTo(GameScreen screen) { _audioService.PlayEffect(AudioCue.Tap); _navigation.NavigateTo(screen); }
+    private void SelectModule(GameModule module)
+    {
+        _selection.SelectModule(module);
+        _audioService.PlayEffect(AudioCue.Tap);
+        _navigation.NavigateTo(GameScreen.OperationSelection);
+    }
 
     private void DrawGameCard(SKCanvas canvas, GameRectangle bounds, SKColor color, string title, string subtitle, int icon)
     {
@@ -106,7 +113,7 @@ public sealed class HomeScene : KidsSceneBase
         TextPaint.TextSize = 42f; TextPaint.Color = new SKColor(105, 66, 34);
         DrawPumaIcon(canvas, PumaBounds.Left + 92f, PumaBounds.CenterY);
         TextPaint.TextSize = 31f; TextPaint.Color = SKColors.White;
-        canvas.DrawText("Sumemos", PumaBounds.Left + 290f, PumaBounds.CenterY - 12f, TextPaint);
+        canvas.DrawText("Matem\u00E1ticas", PumaBounds.Left + 290f, PumaBounds.CenterY - 12f, TextPaint);
         TextPaint.TextSize = 28f;
         canvas.DrawText("con el Puma", PumaBounds.Left + 290f, PumaBounds.CenterY + 38f, TextPaint);
     }
